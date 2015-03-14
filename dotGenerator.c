@@ -3,10 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void printFile(FILE *clowFile){
+	char arr[100];
+	printf("\nCFLOW file:\n");
+	while(fgets(arr, 100, clowFile) != NULL)
+        printf("%s", arr);
+}
+
 int main(int argc, char *argv[]){
 	FILE *clowFile;
-	char arr[100];
-	
+
 	if (argc < 2) {
       fprintf (stderr, "Usage: %s CFLOW file name\n", argv[0]);
       exit (1);
@@ -19,8 +25,8 @@ int main(int argc, char *argv[]){
       exit (1);
     }
 
-    while(fgets(arr, 100, clowFile) != NULL)
-        puts(arr);
+    // DEBUG
+    printFile(clowFile);
 
     fclose (clowFile);
 	return 0;
