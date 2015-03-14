@@ -1,0 +1,10 @@
+strict graph { 
+  function1 -- function2
+  function1 -- function3
+  function3 -- function4
+  function3 -- function5
+  function3 -- function6
+  function6 -- function1
+  function4 -- function2
+  function7
+} 

@@ -1,0 +1,26 @@
+funkcja1() <void funkcja1 () at test1.c:33> (R):
+    funkcja2() <void funkcja2 (void) at test1.c:30>
+    funkcja3() <void funkcja3 (void) at test1.c:24> (R):
+        funkcja4() <void funkcja4 (void) at test1.c:20>:
+            funkcja2() <void funkcja2 (void) at test1.c:30>
+        funkcja5() <void funkcja5 (void) at test1.c:17>
+        funkcja6() <void funkcja6 (void) at test1.c:13> (R):
+            funkcja1() <void funkcja1 () at test1.c:33> (recursive: see 1)
+funkcja3() <void funkcja3 (void) at test1.c:24> (R):
+    funkcja4() <void funkcja4 (void) at test1.c:20>:
+        funkcja2() <void funkcja2 (void) at test1.c:30>
+    funkcja5() <void funkcja5 (void) at test1.c:17>
+    funkcja6() <void funkcja6 (void) at test1.c:13> (R):
+        funkcja1() <void funkcja1 () at test1.c:33> (R):
+            funkcja2() <void funkcja2 (void) at test1.c:30>
+            funkcja3() <void funkcja3 (void) at test1.c:24> (recursive: see 9)
+funkcja4() <void funkcja4 (void) at test1.c:20>:
+    funkcja2() <void funkcja2 (void) at test1.c:30>
+funkcja6() <void funkcja6 (void) at test1.c:13> (R):
+    funkcja1() <void funkcja1 () at test1.c:33> (R):
+        funkcja2() <void funkcja2 (void) at test1.c:30>
+        funkcja3() <void funkcja3 (void) at test1.c:24> (R):
+            funkcja4() <void funkcja4 (void) at test1.c:20>:
+                funkcja2() <void funkcja2 (void) at test1.c:30>
+            funkcja5() <void funkcja5 (void) at test1.c:17>
+            funkcja6() <void funkcja6 (void) at test1.c:13> (recursive: see 19)
