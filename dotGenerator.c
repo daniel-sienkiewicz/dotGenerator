@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define maxFunctionName 100
+
 struct object{
 	struct object *next; // Next element in the list
 	struct object *prev; // Previous element in the list
 	int spaceCout; // How many space - lewel in graph
-	char name[100]; // Function name
+	char name[maxFunctionName]; // Function name
 };
 
 struct object *head; // Head of the list
@@ -87,13 +89,13 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 
 // Creating list with names of executed functions
 void prepareData(FILE *cflowFile){
-	char arr[100];
+	char arr[300];
 	int spaceCout = 0;
 	int iterator = 0;
-	char name[100];
+	char name[maxFunctionName];
 	int i;
 
-	while(fgets(arr, 100, cflowFile) != NULL){
+	while(fgets(arr, 300, cflowFile) != NULL){
 		
 		// Counting space char
 		while(arr[iterator] == ' '){
@@ -137,7 +139,7 @@ int main(int argc, char *argv[]){
 	prepareData(cflowFile);
 
 	// DEBUG
-	//print(&head, &tail);
+	// print(&head, &tail);
 	
 	createDotFile(&head, &tail, dotFile);
 
