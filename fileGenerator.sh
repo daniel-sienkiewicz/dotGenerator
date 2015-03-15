@@ -63,4 +63,7 @@ else
 	echo ".dot file doesn't exist - check dotGenerator"
 fi
 
+rm $cflowFile
+rm $dotFile
+
 echo "The end"

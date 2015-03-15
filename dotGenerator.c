@@ -62,8 +62,24 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 // Creating *.dot file - main algorithm
 void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 	struct object *jumper;
+	struct object *tmp;
 	jumper = *start;
-	
+	tmp = (*start)->next;
+
+	fprintf(dotFile, "strict graph {");
+
+	while(jumper != NULL){
+		tmp = jumper->next;
+		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
+			if(jumper->spaceCout + 4 == tmp->spaceCout){
+				fprintf(dotFile, "%s -- %s\n", jumper->name, tmp->name);
+			}
+
+			tmp = tmp ->next;
+		}
+		jumper = jumper -> next;
+	}
+	fprintf(dotFile, "}");	
 }
 
 // Creating list with names of executed functions
