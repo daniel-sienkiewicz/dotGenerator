@@ -8,6 +8,7 @@ void funkcja7();
 
 
 void funkcja7(void){
+	funkcja4();
 }
 
 void funkcja6(void){
@@ -31,6 +32,7 @@ void funkcja2(void){
 }
 
 void funkcja1(){
+	funkcja7();
 	funkcja2();
 	funkcja3();
 }

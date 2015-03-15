@@ -14,7 +14,7 @@ generatorLocalization="/home/henio/cflow_tests/dotGenerator.c"
 outputFile="/home/henio/cflow_tests/dotGenerator"
 cflowFile="/home/henio/cflow_tests/cflowFile"
 outputImage="/home/henio/cflow_tests/output.png"
-
+dotFile="/home/henio/cflow_tests/out.dot"
 
 if [ $# != 2 ]; then
 	echo "Uasge: sh fileGenerator.sh C_FILE_PATH function_name"
@@ -55,8 +55,8 @@ else
 	exit 1
 fi
 
-if [ -f text.dot ]; then
-	dot -Tpng text.dot > $outputImage
+if [ -f $dotFile ]; then
+	dot -Tpng $dotFile > $outputImage
 else
 	echo ".dot file doesn't exist - check dotGenerator"
 fi
