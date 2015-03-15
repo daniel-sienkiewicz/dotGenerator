@@ -1,7 +1,0 @@
-strict graph {
-funkcja1 -- funkcja7
-funkcja7 -- funkcja4
-funkcja4 -- funkcja2
-funkcja3 -- funkcja4
-funkcja4 -- funkcja2
-}

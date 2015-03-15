@@ -49,6 +49,7 @@ if [ $compilation == 1 ]; then
 	fi
 fi
 if [ -f $outputFile ] && [ -f $cflowFile ]; then
+	echo -n "Creating .dot file... "
 	$outputFile $cflowFile
 else
 	echo "$cflowFile or $outputFile doesn't exist"
@@ -56,6 +57,7 @@ else
 fi
 
 if [ -f $dotFile ]; then
+	echo "OK"
 	dot -Tpng $dotFile > $outputImage
 else
 	echo ".dot file doesn't exist - check dotGenerator"
