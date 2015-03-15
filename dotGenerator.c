@@ -61,11 +61,12 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 
 // Creating *.dot file - main algorithm
 void createDotFile(struct object **start, struct object **end, FILE *dotFile){
-	struct object *jumper;
-	struct object *tmp;
+	struct object *jumper; // root
+	struct object *tmp; // childrens
 	jumper = *start;
 	tmp = (*start)->next;
 
+	// dot requrements in file
 	fprintf(dotFile, "strict graph {");
 
 	while(jumper != NULL){
@@ -79,6 +80,8 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 		}
 		jumper = jumper -> next;
 	}
+
+	// dot requrements in file
 	fprintf(dotFile, "}");	
 }
 
