@@ -8,7 +8,6 @@
 
 struct object{
 	struct object *next; // Next element in the list
-	struct object *prev; // Previous element in the list
 	int spaceCout; // How many space - lewel in graph
 	char name[maxFunctionName]; // Function name
 };
@@ -36,7 +35,6 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	struct object *newObject = NULL;
 	newObject = (struct object *)malloc(sizeof(struct object));
 	newObject->next = NULL;
-	newObject->prev = NULL;
 
 	newObject->spaceCout = spaceCout;
 	while(name[i] != 40) { // 40 = '('
@@ -48,14 +46,10 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	if(*start == NULL){
 		*start = newObject;
 		(*start)->next = NULL;
-		(*start)->prev = NULL;
 		*end = *start;
-		(*end)->next = NULL;
-		(*end)->prev = NULL;
 		return;
 	} else {
 		(*end)->next = newObject;
-		newObject->prev = (*end);
 		(*end) = newObject;
 		return;
 	}	
