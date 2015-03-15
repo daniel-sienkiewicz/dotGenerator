@@ -59,28 +59,14 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	}	
 }
 
-
-// Creating *.dot file
-void createDotFile(struct object **start, struct object **end, FILE*dotFile){
-	struct object *jumper; //parent
-	struct object *jumper2; //childrens
+// Creating *.dot file - main algorithm
+void createDotFile(struct object **start, struct object **end, FILE *dotFile){
+	struct object *jumper;
 	jumper = *start;
 	
-	fprintf(dotFile, "strict graph {\n");
-
-	while(jumper->next != NULL){
-		jumper2 = jumper->next;
-		while(jumper->spaceCout + 4 == jumper2->spaceCout && jumper2->next != NULL){
-			fprintf(dotFile, "%s -- %s\n", jumper->name, jumper2->name);
-			jumper2 = jumper2->next;
-		}
-
-		jumper = jumper->next;
-	}
-
-	fprintf(dotFile, "}");
 }
 
+// Creating list with names of executed functions
 void prepareData(FILE *cflowFile){
 	char arr[100];
 	int spaceCout = 0;
@@ -103,9 +89,9 @@ void prepareData(FILE *cflowFile){
 			i++;
 		}
 
-    	insert(&head, &tail, name, spaceCout);
-    	spaceCout = 0;
-    	iterator = 0;
+		insert(&head, &tail, name, spaceCout);
+		spaceCout = 0;
+		iterator = 0;
 	}
 }
 
@@ -115,29 +101,29 @@ int main(int argc, char *argv[]){
 
 	// Catching errors
 	if (argc < 2) {
-      printf ("Usage: %s CFLOW file name\n", argv[0]);
-      exit (1);
-    }
+		printf ("Usage: %s CFLOW file name\n", argv[0]);
+		exit (1);
+	}
 
-    // Opening needed files
-    cflowFile = fopen (argv[1], "r");
-   	dotFile = fopen("out.dot", "w+");
+	// Opening needed files
+	cflowFile = fopen (argv[1], "r");
+	dotFile = fopen("out.dot", "w+");
 
-   	// Catching errors
-    if (cflowFile == NULL || dotFile == NULL) {
-      perror("Error: ");
-      exit (1);
-    }
+	// Catching errors
+	if (cflowFile == NULL || dotFile == NULL) {
+		perror("Error: ");
+		exit (1);
+	}
 
-    prepareData(cflowFile);
+	prepareData(cflowFile);
 
-    // DEBUG
-    print(&head, &tail);
-    
-    createDotFile(&head, &tail, dotFile);
+	// DEBUG
+	//print(&head, &tail);
+	
+	createDotFile(&head, &tail, dotFile);
 
-    // Closing opened files
-    fclose(cflowFile);
+	// Closing opened files
+	fclose(cflowFile);
 	fclose(dotFile);
 	return 0;
 }
