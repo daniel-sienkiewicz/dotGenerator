@@ -2,11 +2,11 @@
 
 # This script generate cflow file which can be interpreted by dotgenerator program and the by dot
 
-#############################################
-#											#
-#	Usage: sh fileGenerator.sh --help		#
-#											#
-#############################################
+#################################################
+#						#
+#	Usage: sh fileGenerator.sh --help	#
+#						#
+#################################################
 
 cflowFile="cflowFile"
 outputImage="output.png"
