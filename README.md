@@ -19,6 +19,18 @@ Creating .dot file... OK
 The end
 ~~~
 
+###Help
+~~~
+$ sh fileGenerator.sh --help
+ - attempt to capture frames
+ 
+ [options] application [arguments]
+ 
+options:
+-h, --help              show brief help
+-c, --compile=FILE      compile dot Generator
+~~~
+
 Now you can see graph of usage your function in [$outputImage](fileGenerator.sh)
 
 ##Requirements

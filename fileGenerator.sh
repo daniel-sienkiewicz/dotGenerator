@@ -2,68 +2,104 @@
 
 # This script generate cflow file which can be interpreted by dotgenerator program and the by dot
 
-#################################################################
-#								#
-#	Usage: sh fileGenerator.sh C_FILE_PATH function_name	#
-#								#
-#################################################################
+#############################################
+#											#
+#	Usage: sh fileGenerator.sh --help		#
+#											#
+#############################################
 
+cflowFile="cflowFile"
+outputImage="output.png"
+dotFile="out.dot"
 
-compilation=1
-generatorLocalization="/home/henio/cflow_tests/dotGenerator.c"
-outputFile="/home/henio/cflow_tests/dotGenerator"
-cflowFile="/home/henio/cflow_tests/cflowFile"
-outputImage="/home/henio/cflow_tests/output.png"
-dotFile="/home/henio/cflow_tests/out.dot"
+while test $# -gt 0; do
+        case "$1" in
+                -h|--help)
+                        echo "$package - attempt to capture frames"
+                        echo " "
+                        echo "$package [options] application [arguments]"
+                        echo " "
+                        echo "options:"
+                        echo "-h, --help              show brief help"
+                        echo "-c, --compile=FILE      compile dot Generator"
+                        exit 0
+                        ;;
+                -c)		
+						echo -n "Compilation... "
+						gcc -Wall $2
 
-if [ $# != 2 ]; then
-	echo "Uasge: sh fileGenerator.sh C_FILE_PATH function_name"
+                        if [ -f a.out ]; then
+							echo "OK"
+						else
+							echo "Err"
+								exit 1
+						fi
+						shift
+						;;
+                --compile*)
+						echo -n "Compilation... "
+                        gcc -Wall $2
+
+                        if [ -f a.out ]; then
+							echo "OK"
+						else
+							echo "Err"
+								exit 1
+						fi
+						shift
+                        ;;
+                *)
+                        break
+                        ;;
+        esac
+done
+
+if [ $# = 0 ]; then
+	echo "Uasge: sh fileGenerator.sh FLAGS"
+	echo "See --help"
 	exit 1
 fi
 
-if [ -f $1 ]; then
-	echo -n "Creating CFLOW file... "
-	cflow -o $cflowFile -m $2 $1
-	
-	if [ -f $cflowFile ]; then
-		echo "OK"
+echo -n "Creating CFLOW file... "
+cflow -o $cflowFile -m $2 $1
 
-	else
-		echo "Err"
-		exit 1
-	fi 
+if [ -f $cflowFile ]; then
+	echo "OK"
 else
-	echo "$1 doesn't exist"
+	echo "Err"
 	exit 1
 fi
 
-if [ $compilation == 1 ]; then
-	echo -n "Compilation... "
-	gcc -Wall $generatorLocalization -o $outputFile
-	
-	if [ -f $outputFile ]; then
+if [ ! -f a.out ]; then
+	echo -n "Compilation..."
+	gcc -Wall dotGenerator.c
+	if [ -f a.out ]; then
 		echo "OK"
 	else
 		echo "Err"
 		exit 1
 	fi
 fi
-if [ -f $outputFile ] && [ -f $cflowFile ]; then
-	echo -n "Creating .dot file... "
-	$outputFile $cflowFile
+
+echo -n "Creating .dot file... "
+./a.out $cflowFile
+if [ -f $cflowFile ];then
+	echo "OK"
 else
-	echo "$cflowFile or $outputFile doesn't exist"
+	echo "Err"
 	exit 1
 fi
 
-if [ -f $dotFile ]; then
-	echo "OK"
-	dot -Tpng $dotFile > $outputImage
-else
-	echo ".dot file doesn't exist - check dotGenerator"
-fi
+dot -Tpng $dotFile > $outputImage
 
-rm $cflowFile
+echo -n "Cleaning up..."
 rm $dotFile
+rm $cflowFile
+
+if [ ! -f $dotFile ] && [ ! -f $cflowFile ]; then
+	echo "OK"
+else
+	echo "Err"
+fi
 
 echo "The end"
