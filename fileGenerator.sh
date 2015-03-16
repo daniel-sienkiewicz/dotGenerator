@@ -13,45 +13,43 @@ outputImage="output.png"
 dotFile="out.dot"
 
 while test $# -gt 0; do
-		case "$1" in
-				-h|--help)
-						echo "$package - attempt to capture frames"
-						echo " "
-						echo "$package [options] application [arguments]"
-						echo " "
-						echo "options:"
-						echo "-h, --help              show brief help"
-						echo "-c, --compile=FILE      compile dot Generator"
-						exit 0
-						;;
-				-c)		
-						echo -n "Compilation... "
-						gcc -Wall $2
-
-						if [ -f a.out ]; then
-							echo "OK"
-						else
-							echo "Err"
-								exit 1
-						fi
-						shift
-						;;
-				--compile*)
-						echo -n "Compilation... "
-						gcc -Wall $2
-
-						if [ -f a.out ]; then
-							echo "OK"
-						else
-							echo "Err"
-								exit 1
-						fi
-						shift
-						;;
-				*)
-						break
-						;;
-		esac
+	case "$1" in
+		-h|--help)
+			echo "$package - attempt to capture frames"
+			echo " "
+			echo "$package [options] application [arguments]"
+			echo " "
+			echo "options:"
+			echo "-h, --help              show brief help"
+			echo "-c, --compile=FILE      compile dot Generator"
+			exit 0
+			;;
+		-c)		
+			echo -n "Compilation... "
+			gcc -Wall $2
+			if [ -f a.out ]; then
+				echo "OK"
+			else
+				echo "Err"
+				exit 1
+			fi
+			shift
+			;;
+		--compile*)
+			echo -n "Compilation... "
+			gcc -Wall $2
+			if [ -f a.out ]; then
+				echo "OK"
+			else
+				echo "Err"
+				exit 1
+			fi
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
 done
 
 if [ $# = 0 ]; then
