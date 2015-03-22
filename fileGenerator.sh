@@ -90,9 +90,9 @@ fi
 
 dot -Tpng $dotFile > $outputImage
 
-echo -n "Cleaning up..."
-rm $dotFile
-rm $cflowFile
+echo -n "Cleaning up... "
+#rm $dotFile
+#rm $cflowFile
 
 if [ ! -f $dotFile ] && [ ! -f $cflowFile ]; then
 	echo "OK"
