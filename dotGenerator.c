@@ -1,15 +1,19 @@
-// This is program to generate dot code from flow file
+// This is program to generate dot code from cflow file
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h> /* for fork */
+#include <sys/types.h> /* for pid_t */
+#include <sys/wait.h> /* for wait */
+
 #define maxFunctionName 100
 #define maxArgName 100
 
 // Argument of function
-struct args{
-	struct args *next; // Next element in the list
+struct sysFun{
+	struct sysFun *next; // Next element in the list
 	char name[maxArgName]; // Argument name
 };
 
@@ -19,14 +23,14 @@ struct object{
 	int spaceCout; // How many space - lewel in graph
 	char name[maxFunctionName]; // Function name
 	int lineNumber; // Line in which start this function
-	struct args *arg;
+	int uniq; // if function in uniq in the list
 };
 
 struct object *head; // Head of the functions list
 struct object *tail; // Tail of the functions list
 
-struct args *sysHead; // Head of the args list
-struct args *sysTail; // Tail of the args list
+struct sysFun *sysHead; // Head of the sysFun list
+struct sysFun *sysTail; // Tail of the sysFun list
 
 // DEBUG function
 // Printing all elements in list
@@ -36,19 +40,6 @@ void print(struct object **start, struct object **end){
 	printf("All functions:\n");
 	while(jumper != NULL){
 		printf("Name: %s Space: %i LineNumber: %i\n", jumper->name, jumper->spaceCout, jumper->lineNumber);
-		jumper = jumper->next;
-	}
-	printf("\n");
-}
-
-// DEBUG function
-// Printing all elements in list
-void printArgs(struct args **start, struct args **end){
-	struct args *jumper;
-	jumper = *start;
-	printf("All agrumemnts:\n");
-	while(jumper != NULL){
-		printf("Name: %s\n", jumper->name);
 		jumper = jumper->next;
 	}
 	printf("\n");
@@ -64,6 +55,7 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 
 	newObject->spaceCout = spaceCout;
 	newObject->lineNumber = 0;
+	newObject->uniq = 1;
 
 	// Search function name
 	while(name[i] != 40) { // 40 = '('
@@ -84,6 +76,14 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 		i++;
 	}
 
+	struct object *jumper;
+	jumper = *start;
+	while(jumper != NULL){
+		if(jumper->lineNumber == newObject->lineNumber)
+			newObject->uniq = 0;
+		jumper = jumper->next;
+	}
+
 	//if list is empty
 	if(*start == NULL){
 		*start = newObject;
@@ -97,11 +97,10 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	}	
 }
 
-
 // Check if function is in system functions
-int in(struct args **start, struct args **end, char name[]){
+int in(struct sysFun **start, struct sysFun **end, char name[]){
 	int check = 1;
-	struct args *jumper;
+	struct sysFun *jumper;
 	jumper = *start;
 	
 	while(jumper != NULL && check != 0){
@@ -126,11 +125,13 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 	jumper = jumper -> next;
 
 	while(jumper != NULL){
-		if(in(&sysHead, &sysTail, jumper->name)){
-			fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record, color=\"#0040FF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+		if(jumper->uniq){
+			if(in(&sysHead, &sysTail, jumper->name)){
+				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record, color=\"#0040FF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+			}
+			else
+				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
 		}
-		else
-			fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
 		jumper = jumper -> next;
 	}
 
@@ -141,7 +142,7 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 		tmp = jumper->next;
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
-				fprintf(dotFile, "\t%s -> %s [label=\"TESTOWE ARGS\"];\n", jumper->name, tmp->name);
+				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
 			}
 
 			tmp = tmp ->next;
@@ -182,9 +183,9 @@ void prepareData(FILE *cflowFile){
 	}
 }
 
-void init(struct args **start, struct args **end, char name[]){
-	struct args *newObject = NULL;
-	newObject = (struct args *)malloc(sizeof(struct args));
+void init(struct sysFun **start, struct sysFun **end, char name[]){
+	struct sysFun *newObject = NULL;
+	newObject = (struct sysFun *)malloc(sizeof(struct sysFun));
 	newObject->next = NULL;
 	int i = 0;
 
@@ -216,17 +217,26 @@ int main(int argc, char *argv[]){
 		exit (1);
 	}
 
-	// Opening needed files
-	cflowFile = fopen (argv[1], "r");
-	dotFile = fopen("out.dot", "w+");
+	pid_t pid = fork();
+    if (pid == 0) { // child process
+        static char *arg[] = {"cflow", "--output=cflowFile", "--main=funkcja1", "test.c"};
+        execv("/usr/local/bin/cflow", arg);
+        exit(127); // only if execv fails
+    } else { // pid!=0; parent process
+        waitpid(pid,0,0); // wait for child to exit
+    }
 
+	// Opening needed files
+	cflowFile = fopen ("cflowFile", "r");
+	dotFile = fopen("out.dot", "w+");
+	
 	// Catching errors
 	if (cflowFile == NULL || dotFile == NULL) {
 		perror("Error: ");
 		exit (1);
 	}
 
-	// List of system functions
+	// List of sample system functions
 	init(&sysHead, &sysTail, "malloc");
 	init(&sysHead, &sysTail, "sizeof");
 	init(&sysHead, &sysTail, "fprintf");
@@ -235,9 +245,6 @@ int main(int argc, char *argv[]){
 	init(&sysHead, &sysTail, "fclose");
 	init(&sysHead, &sysTail, "fgets");
 	init(&sysHead, &sysTail, "funkcja5");
-
-	// DEBUG
-	printArgs(&sysHead, &sysTail);
 
 	// Preparing data to insert in DOT file
 	prepareData(cflowFile);
