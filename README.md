@@ -12,7 +12,7 @@ $ ./dotGenerator C_FILE_PATH
 $ ./dotGenerator test.c
 ~~~
 
-Now you can see graph of usage your function in [$outputImage](fileGenerator.sh)
+Now you can see graph of usage your function in outputImage
 
 ##Requirements
 * Cflow package
