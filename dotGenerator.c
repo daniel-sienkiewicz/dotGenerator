@@ -4,13 +4,13 @@
 int main(int argc, char *argv[]){
 
 	// Catching errors
-	if (argc < 2) {
-		printf ("Usage: %s CFLOW file name\n", argv[0]);
+	if (argc < 3) {
+		printf ("Usage: %s C_PATH_FILE FUNCTION_NAME\n", argv[0]);
 		exit (1);
 	}
 
 	// Execute cFlow
-	cflowFunction();
+	cflowFunction(argv[1], argv[2]);
 	
 	// Creating DOT file with data
 	createDotFile(&head, &tail, dotFile);

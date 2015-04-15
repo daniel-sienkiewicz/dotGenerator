@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> /* for fork */
-#include <sys/types.h> /* for pid_t */
-#include <sys/wait.h> /* for wait */
 
 #define maxFunctionName 100
 #define maxArgName 100
@@ -34,16 +31,16 @@ struct sysFun *sysHead; // Head of the sysFun list
 struct sysFun *sysTail; // Tail of the sysFun list
 
 // List of functions
-void print(struct object **start, struct object **end);
-void init(struct sysFun **start, struct sysFun **end, char name[]);
-int in(struct sysFun **start, struct sysFun **end, char name[]);
-void createDotFile(struct object **start, struct object **end, FILE *dotFile);
-void insert(struct object **start, struct object **end, char name[], int spaceCout);
-void prepareData(FILE *cflowFile);
-void cflowFunction();
+void print(struct object **, struct object **);
+void init(struct sysFun **, struct sysFun **, char []);
+int in(struct sysFun **, struct sysFun **, char []);
+void createDotFile(struct object **, struct object **, FILE *);
+void insert(struct object **, struct object **, char [], int);
+void prepareData(FILE *);
+void cflowFunction(char *, char *);
 void startInit();
 void createPng();
-void checkStatus(int status);
+void checkStatus(int);
 
 // DEBUG function
 // Printing all elements in list
@@ -242,9 +239,18 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 }
 
 // Execute cFlow
-void cflowFunction(){
+void cflowFunction(char *argv, char *argv2){
+	char command[BUFSIZ];
 	int status = 0;
-    status = system("cflow --output=cflowFile --main=funkcja1 test.c");
+
+
+	strcpy (command, "cflow --output=cflowFile --main=");
+	strcat (command, argv2);
+	strcat (command, " ");
+  	strcat (command, argv);
+
+  	printf("\nExecuting: %s\n\n", command);
+    status = system(command);
     checkStatus(status);
 
     // Opening needed files
@@ -261,6 +267,7 @@ void cflowFunction(){
 // Creating PNG file and Cleaning up
 void createPng(){
 	int status = 0;
+	printf("Generate PNG file and cleaning Up...\n\n");
 	status = system("dot -Tpng out.dot > out.png");
 	status = status + system("rm cflowFile out.dot");
 	checkStatus(status);
