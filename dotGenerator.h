@@ -42,6 +42,8 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 void prepareData(FILE *cflowFile);
 void cflowFunction();
 void startInit();
+void createPng();
+void checkStatus(int status);
 
 // DEBUG function
 // Printing all elements in list
@@ -80,55 +82,16 @@ void init(struct sysFun **start, struct sysFun **end, char name[]){
 	}	
 }
 
-// Creating *.dot file - main algorithm
-void createDotFile(struct object **start, struct object **end, FILE *dotFile){
-	startInit();
-	// Preparing data to insert in DOT file
-	prepareData(cflowFile);
-
-	struct object *jumper; // root
-	struct object *tmp; // childrens
-	jumper = *start;
-	tmp = (*start)->next;
-
-	// dot requrements in file
-	fprintf(dotFile, "digraph FlowGraph {\n");
-
-	fprintf(dotFile, "\t%s [label=\"%s line: %i\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
-	jumper = jumper -> next;
-
-	while(jumper != NULL){
-		if(jumper->uniq){
-			if(in(&sysHead, &sysTail, jumper->name)){
-				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record, color=\"#0040FF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
-			}
-			else
-				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
-		}
-		jumper = jumper -> next;
-	}
-
-	jumper = *start;
-
-	fprintf(dotFile, "\n");
-	while(jumper != NULL){
-		tmp = jumper->next;
-		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
-			if(jumper->spaceCout + 4 == tmp->spaceCout){
-				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
-			}
-
-			tmp = tmp ->next;
-		}
-		jumper = jumper -> next;
-	}
-
-	// dot requrements in file
-	fprintf(dotFile, "}");
-
-	// Closing opened files
-	fclose(cflowFile);
-	fclose(dotFile);
+void startInit(){
+	// List of sample system functions
+	init(&sysHead, &sysTail, "malloc");
+	init(&sysHead, &sysTail, "sizeof");
+	init(&sysHead, &sysTail, "fprintf");
+	init(&sysHead, &sysTail, "printf");
+	init(&sysHead, &sysTail, "fopen");
+	init(&sysHead, &sysTail, "fclose");
+	init(&sysHead, &sysTail, "fgets");
+	init(&sysHead, &sysTail, "funkcja5");
 }
 
 // Inserting new object into list
@@ -212,40 +175,6 @@ void prepareData(FILE *cflowFile){
 	}
 }
 
-// Execute cFlow
-void cflowFunction(){
-	pid_t pid = fork();
-    if (pid == 0) { // child process
-        static char *arg[] = {"cflow", "--output=cflowFile", "--main=funkcja1", "test.c"};
-        execv("/usr/local/bin/cflow", arg);
-        exit(127); // only if execv fails
-    } else { // pid!=0; parent process
-        waitpid(pid,0,0); // wait for child to exit
-    }
-
-    // Opening needed files
-	cflowFile = fopen ("cflowFile", "r");
-	dotFile = fopen("out.dot", "w+");
-	
-	// Catching errors
-	if (cflowFile == NULL || dotFile == NULL) {
-		perror("Error: ");
-		exit (1);
-	}
-}
-
-void startInit(){
-	// List of sample system functions
-	init(&sysHead, &sysTail, "malloc");
-	init(&sysHead, &sysTail, "sizeof");
-	init(&sysHead, &sysTail, "fprintf");
-	init(&sysHead, &sysTail, "printf");
-	init(&sysHead, &sysTail, "fopen");
-	init(&sysHead, &sysTail, "fclose");
-	init(&sysHead, &sysTail, "fgets");
-	init(&sysHead, &sysTail, "funkcja5");
-}
-
 // Check if function is in system functions
 int in(struct sysFun **start, struct sysFun **end, char name[]){
 	int check = 1;
@@ -260,4 +189,87 @@ int in(struct sysFun **start, struct sysFun **end, char name[]){
 	return !check;
 }
 
+// Creating *.dot file - main algorithm
+void createDotFile(struct object **start, struct object **end, FILE *dotFile){
+	startInit();
+	// Preparing data to insert in DOT file
+	prepareData(cflowFile);
+
+	struct object *jumper; // root
+	struct object *tmp; // childrens
+	jumper = *start;
+	tmp = (*start)->next;
+
+	// dot requrements in file
+	fprintf(dotFile, "digraph FlowGraph {\n");
+
+	fprintf(dotFile, "\t%s [label=\"%s line: %i\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+	jumper = jumper -> next;
+
+	while(jumper != NULL){
+		if(jumper->uniq){
+			if(in(&sysHead, &sysTail, jumper->name)){
+				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record, color=\"#0040FF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+			}
+			else
+				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
+		}
+		jumper = jumper -> next;
+	}
+
+	jumper = *start;
+
+	fprintf(dotFile, "\n");
+	while(jumper != NULL){
+		tmp = jumper->next;
+		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
+			if(jumper->spaceCout + 4 == tmp->spaceCout){
+				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
+			}
+
+			tmp = tmp ->next;
+		}
+		jumper = jumper -> next;
+	}
+
+	// dot requrements in file
+	fprintf(dotFile, "}");
+
+	// Closing opened files
+	fclose(cflowFile);
+	fclose(dotFile);
+	createPng();
+}
+
+// Execute cFlow
+void cflowFunction(){
+	int status = 0;
+    status = system("cflow --output=cflowFile --main=funkcja1 test.c");
+    checkStatus(status);
+
+    // Opening needed files
+	cflowFile = fopen ("cflowFile", "r");
+	dotFile = fopen("out.dot", "w+");
+	
+	// Catching errors
+	if (cflowFile == NULL || dotFile == NULL) {
+		perror("Error: ");
+		exit (1);
+	}
+}
+
+// Creating PNG file and Cleaning up
+void createPng(){
+	int status = 0;
+	status = system("dot -Tpng out.dot > out.png");
+	status = status + system("rm cflowFile out.dot");
+	checkStatus(status);
+}
+
+void checkStatus(int status){
+	if(status != 0){
+		printf("Error\n");
+		exit(1);
+	}
+}
 #endif

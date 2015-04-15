@@ -2,6 +2,7 @@
 #include "dotGenerator.h"
 
 int main(int argc, char *argv[]){
+
 	// Catching errors
 	if (argc < 2) {
 		printf ("Usage: %s CFLOW file name\n", argv[0]);
