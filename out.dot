@@ -1,0 +1,21 @@
+digraph FlowGraph {
+	funkcja1 [label="funkcja1 line: 35" shape=ellipse, height=0.2,style="filled", color="#000000", fontcolor="#FFFFFF"];
+	funkcja7 [label="{<f0> funkcja7|<f1> line: 10}" shape=record];
+	funkcja4 [label="{<f0> funkcja4|<f1> line: 22}" shape=record];
+	funkcja2 [label="{<f0> funkcja2|<f1> line: 32}" shape=record];
+	funkcja3 [label="{<f0> funkcja3|<f1> line: 26}" shape=record];
+	funkcja5 [label="{<f0> funkcja5|<f1> line: 19}" shape=record, color="#0040FF"];
+	funkcja6 [label="{<f0> funkcja6|<f1> line: 15}" shape=record];
+
+	funkcja1 -> funkcja7;
+	funkcja1 -> funkcja2;
+	funkcja1 -> funkcja3;
+	funkcja7 -> funkcja4;
+	funkcja7 -> funkcja7;
+	funkcja4 -> funkcja2;
+	funkcja3 -> funkcja4;
+	funkcja3 -> funkcja5;
+	funkcja3 -> funkcja6;
+	funkcja4 -> funkcja2;
+	funkcja6 -> funkcja1;
+}
