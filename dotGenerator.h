@@ -20,7 +20,6 @@ struct object{
 	int lineNumber; // Line in which start this function
 	int uniq; // if function in uniq in the list
 	char arguments[maxArgName]; // list of function arguments
-	int lonley;
 };
 
 FILE *cflowFile;
@@ -41,9 +40,6 @@ void prepareData(FILE *);
 void cflowFunction(char *, char *);
 void createPng();
 void checkStatus(int);
-void checkIfLonley(struct object **, struct object **);
-int inObj(struct object **, struct object **, char []);
-void checkLonley(struct object **, struct object **);
 
 // DEBUG function
 // Printing all elements in list
@@ -52,7 +48,7 @@ void print(struct object **start, struct object **end){
 	jumper = *start;
 	printf("All functions:\n");
 	while(jumper != NULL){
-		printf("Name: %s Space: %i LineNumber: %i Args: %s Lonley: %i Uniq: %i\n", jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments, jumper->lonley, jumper->uniq);
+		printf("Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
 		jumper = jumper->next;
 	}
 	printf("\n");
@@ -94,7 +90,6 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	newObject->spaceCout = spaceCout;
 	newObject->lineNumber = 0;
 	newObject->uniq = 1;
-	newObject->lonley = 1;
 
 	// Search function name
 	while(name[i] != 40) { // 40 = '('
@@ -183,54 +178,10 @@ void prepareData(FILE *cflowFile){
 	}
 }
 
-// Check if function is in list of functions
-int inObj(struct object **start, struct object **end, char name[]){
-	int check = 1;
-	struct object *jumper;
-	jumper = *start;
-	
-	while(jumper != NULL && check != 0){
-		check = strcmp (name, jumper->name);
-		if(check == 0){
-			jumper->lonley = 0;
-		}
-		jumper = jumper->next;
-	}
-
-	return !check;
-}
-
-void checkLonley(struct object **start, struct object **end){
-	struct object *jumper;
-	struct object *tmp;
-	jumper = *start;
-	tmp = *start;
-	
-	while(jumper != NULL){
-		if(jumper->spaceCout > 0){
-			tmp = *start;
-			while(tmp != NULL){
-				if(!strcmp (tmp->name, jumper->name)){
-					tmp->lonley = 0;
-				}
-				tmp = tmp->next;
-			}
-		}
-		jumper = jumper->next;
-	}
-}
-
-void checkIfLonley(struct object **start, struct object **end){
-	if(inObj(&head, &tail, "main")){
-		checkLonley(&head, &tail);
-	}
-}
-
 // Creating *.dot file - main algorithm
 void createDotFile(struct object **start, struct object **end, FILE *dotFile, char *argv3, char *argv4){
 	// Preparing data to insert in DOT file
 	prepareData(cflowFile);
-	checkIfLonley(&head, &tail);
 
 	struct object *jumper; // root
 	struct object *tmp; // childrens
