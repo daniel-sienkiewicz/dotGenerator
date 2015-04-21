@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 	cflowFunction(argv[1], argv[2]);
 	
 	// Creating DOT file with data
-	createDotFile(&head, &tail, dotFile);
+	createDotFile(&head, &tail, dotFile, argv[3], argv[4]);
 
 	// DEBUG
 	print(&head, &tail);

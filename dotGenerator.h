@@ -4,21 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define maxFunctionName 100
-#define maxArgName 100
+#define maxFunctionName 1000
+#define maxArgName 1000
 // Argument of function
 struct sysFun{
 	struct sysFun *next; // Next element in the list
-	char name[maxArgName]; // Argument name
+	char name[maxFunctionName]; // Argument name
 };
 
 // Function
 struct object{
 	struct object *next; // Next element in the list
-	int spaceCout; // How many space - lewel in graph
+	int spaceCout; // How many space - level in graph
 	char name[maxFunctionName]; // Function name
 	int lineNumber; // Line in which start this function
 	int uniq; // if function in uniq in the list
+	char arguments[maxArgName]; // list of function arguments
+	int lonley;
 };
 
 FILE *cflowFile;
@@ -33,14 +35,15 @@ struct sysFun *sysTail; // Tail of the sysFun list
 // List of functions
 void print(struct object **, struct object **);
 void init(struct sysFun **, struct sysFun **, char []);
-int in(struct sysFun **, struct sysFun **, char []);
-void createDotFile(struct object **, struct object **, FILE *);
+void createDotFile(struct object **, struct object **, FILE *, char *, char *);
 void insert(struct object **, struct object **, char [], int);
 void prepareData(FILE *);
 void cflowFunction(char *, char *);
-void startInit();
 void createPng();
 void checkStatus(int);
+void checkIfLonley(struct object **, struct object **);
+int inObj(struct object **, struct object **, char []);
+void checkLonley(struct object **, struct object **);
 
 // DEBUG function
 // Printing all elements in list
@@ -49,7 +52,7 @@ void print(struct object **start, struct object **end){
 	jumper = *start;
 	printf("All functions:\n");
 	while(jumper != NULL){
-		printf("Name: %s Space: %i LineNumber: %i\n", jumper->name, jumper->spaceCout, jumper->lineNumber);
+		printf("Name: %s Space: %i LineNumber: %i Args: %s Lonley: %i Uniq: %i\n", jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments, jumper->lonley, jumper->uniq);
 		jumper = jumper->next;
 	}
 	printf("\n");
@@ -79,21 +82,10 @@ void init(struct sysFun **start, struct sysFun **end, char name[]){
 	}	
 }
 
-void startInit(){
-	// List of sample system functions
-	init(&sysHead, &sysTail, "malloc");
-	init(&sysHead, &sysTail, "sizeof");
-	init(&sysHead, &sysTail, "fprintf");
-	init(&sysHead, &sysTail, "printf");
-	init(&sysHead, &sysTail, "fopen");
-	init(&sysHead, &sysTail, "fclose");
-	init(&sysHead, &sysTail, "fgets");
-	init(&sysHead, &sysTail, "funkcja5");
-}
-
 // Inserting new object into list
 void insert(struct object **start, struct object **end, char name[], int spaceCout){
-	int i = 0, msc = 1;
+	int i = 0;
+	int first = 0;
 
 	struct object *newObject = NULL;
 	newObject = (struct object *)malloc(sizeof(struct object));
@@ -102,6 +94,7 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	newObject->spaceCout = spaceCout;
 	newObject->lineNumber = 0;
 	newObject->uniq = 1;
+	newObject->lonley = 1;
 
 	// Search function name
 	while(name[i] != 40) { // 40 = '('
@@ -109,17 +102,32 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 		i++;
 	}
 
-	//Search line number
-	while(name[i] != 58){ // 58 = ':'
+	i++;
+	
+	// Search argument list
+	while(name[i] != 40){ // 40 = '('
 		i++;
 	}
 
 	i++;
 
-	while(name[i] != 62){ // 62 = '>'
-		newObject->lineNumber = newObject->lineNumber * msc + name[i] - 48;
-		msc *= 10;
+	while(name[i] != 41){ // 40 = ')'
+		newObject->arguments[first] = name[i];
 		i++;
+		first++;
+	}
+
+	while(name[i] != 58 && i < maxFunctionName){
+		i++;
+	}
+
+	// Search line numer
+	if(i < maxFunctionName){
+		i++;
+		while(name[i] != 62){ // 62 = '>'
+			newObject->lineNumber = newObject->lineNumber * 10 + (name[i] - 48);
+			i++;
+		}
 	}
 
 	struct object *jumper;
@@ -145,52 +153,84 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 
 // Creating list with names of executed functions
 void prepareData(FILE *cflowFile){
-	char arr[300];
+	char arr[maxFunctionName];
 	int spaceCout = 0;
 	int iterator = 0;
 	char name[maxFunctionName];
 	int i;
 
-	while(fgets(arr, 300, cflowFile) != NULL){
-		
+	while(fgets(arr, maxFunctionName, cflowFile) != NULL){
+
 		// Counting space char
 		while(arr[iterator] == ' '){
 			spaceCout++;
 			iterator++;
 		}
 
-		i = iterator;
+		//i = iterator;
 
-		while(arr[i] != 41){ // 41 = ')'
+		for(i = iterator; i < maxFunctionName; i++){
 			name[i - iterator] = arr[i];
-			i++;
 		}
 
 		insert(&head, &tail, name, spaceCout);
 		spaceCout = 0;
 		iterator = 0;
+
+		for(i = 0; i < maxFunctionName; i++){
+			arr[i] = 0;
+		}
 	}
 }
 
-// Check if function is in system functions
-int in(struct sysFun **start, struct sysFun **end, char name[]){
+// Check if function is in list of functions
+int inObj(struct object **start, struct object **end, char name[]){
 	int check = 1;
-	struct sysFun *jumper;
+	struct object *jumper;
 	jumper = *start;
 	
 	while(jumper != NULL && check != 0){
 		check = strcmp (name, jumper->name);
+		if(check == 0){
+			jumper->lonley = 0;
+		}
 		jumper = jumper->next;
 	}
 
 	return !check;
 }
 
+void checkLonley(struct object **start, struct object **end){
+	struct object *jumper;
+	struct object *tmp;
+	jumper = *start;
+	tmp = *start;
+	
+	while(jumper != NULL){
+		if(jumper->spaceCout > 0){
+			tmp = *start;
+			while(tmp != NULL){
+				if(!strcmp (tmp->name, jumper->name)){
+					tmp->lonley = 0;
+				}
+				tmp = tmp->next;
+			}
+		}
+		jumper = jumper->next;
+	}
+}
+
+void checkIfLonley(struct object **start, struct object **end){
+	if(inObj(&head, &tail, "main")){
+		checkLonley(&head, &tail);
+	}
+}
+
 // Creating *.dot file - main algorithm
-void createDotFile(struct object **start, struct object **end, FILE *dotFile){
-	startInit();
+void createDotFile(struct object **start, struct object **end, FILE *dotFile, char *argv3, char *argv4){
 	// Preparing data to insert in DOT file
 	prepareData(cflowFile);
+	checkIfLonley(&head, &tail);
 
 	struct object *jumper; // root
 	struct object *tmp; // childrens
@@ -200,16 +240,22 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 	// dot requrements in file
 	fprintf(dotFile, "digraph FlowGraph {\n");
 
-	fprintf(dotFile, "\t%s [label=\"%s line: %i\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+	if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
+		fprintf(dotFile, "\t%s [label=\"%s line: %i\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+	}else{
+		fprintf(dotFile, "\t%s [label=\"%s\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name);
+	}
+
 	jumper = jumper -> next;
 
 	while(jumper != NULL){
-		if(jumper->uniq){
-			if(in(&sysHead, &sysTail, jumper->name)){
-				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record, color=\"#0040FF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
-			}
-			else
+		if(jumper->uniq && jumper->lineNumber != 0){
+			if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
 				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
+			}
+			else{
+				fprintf(dotFile, "\t%s [label=\"%s\" shape=record];\n", jumper->name, jumper->name);
+			}
 		}
 		jumper = jumper -> next;
 	}
@@ -221,7 +267,12 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 		tmp = jumper->next;
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
-				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
+				if((argv3 != NULL && !strcmp(argv3, "args")) || (argv4 != NULL &&!strcmp(argv4, "args"))){
+					fprintf(dotFile, "\t%s -> %s [label=\"%s\"];\n", jumper->name, tmp->name, jumper->arguments);
+				}
+				else{
+					fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
+				}
 			}
 
 			tmp = tmp ->next;
@@ -234,6 +285,7 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 
 	// Closing opened files
 	fclose(cflowFile);
+	system("rm cflowFile");
 	fclose(dotFile);
 	createPng();
 }
@@ -242,7 +294,6 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile){
 void cflowFunction(char *argv, char *argv2){
 	char command[BUFSIZ];
 	int status = 0;
-
 
 	strcpy (command, "cflow --output=cflowFile --main=");
 	strcat (command, argv2);
@@ -269,13 +320,12 @@ void createPng(){
 	int status = 0;
 	printf("Generate PNG file and cleaning Up...\n\n");
 	status = system("dot -Tpng out.dot > out.png");
-	status = status + system("rm cflowFile out.dot");
 	checkStatus(status);
 }
 
 void checkStatus(int status){
 	if(status != 0){
-		printf("Error\n");
+		printf("Error %i\n", status);
 		exit(1);
 	}
 }
