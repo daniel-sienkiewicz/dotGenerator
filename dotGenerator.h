@@ -6,11 +6,6 @@
 
 #define maxFunctionName 1000
 #define maxArgName 1000
-// Argument of function
-struct sysFun{
-	struct sysFun *next; // Next element in the list
-	char name[maxFunctionName]; // Argument name
-};
 
 // Function
 struct object{
@@ -28,12 +23,8 @@ FILE *dotFile;
 struct object *head; // Head of the functions list
 struct object *tail; // Tail of the functions list
 
-struct sysFun *sysHead; // Head of the sysFun list
-struct sysFun *sysTail; // Tail of the sysFun list
-
 // List of functions
 void print(struct object **, struct object **);
-void init(struct sysFun **, struct sysFun **, char []);
 void createDotFile(struct object **, struct object **, FILE *, char *, char *);
 void insert(struct object **, struct object **, char [], int);
 void prepareData(FILE *);
@@ -52,30 +43,6 @@ void print(struct object **start, struct object **end){
 		jumper = jumper->next;
 	}
 	printf("\n");
-}
-
-void init(struct sysFun **start, struct sysFun **end, char name[]){
-	struct sysFun *newObject = NULL;
-	newObject = (struct sysFun *)malloc(sizeof(struct sysFun));
-	newObject->next = NULL;
-	int i = 0;
-
-	while(name[i] != '\0'){
-		newObject->name[i] = name[i];
-		i++;
-	}
-
-	//if list is empty
-	if(*start == NULL){
-		*start = newObject;
-		(*start)->next = NULL;
-		*end = *start;
-		return;
-	} else {
-		(*end)->next = newObject;
-		(*end) = newObject;
-		return;
-	}	
 }
 
 // Inserting new object into list
@@ -219,7 +186,7 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile, ch
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
 				if((argv3 != NULL && !strcmp(argv3, "args")) || (argv4 != NULL &&!strcmp(argv4, "args"))){
-					fprintf(dotFile, "\t%s -> %s [label=\"%s\"];\n", jumper->name, tmp->name, jumper->arguments);
+					fprintf(dotFile, "\t%s -> %s [label=\"%s\"];\n", jumper->name, tmp->name, tmp->arguments);
 				}
 				else{
 					fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
