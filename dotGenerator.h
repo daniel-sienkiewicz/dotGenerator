@@ -156,10 +156,10 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile, ch
 	tmp = (*start)->next;
 
 	// dot requrements in file
-	fprintf(dotFile, "digraph FlowGraph {\n");
+	fprintf(dotFile, "digraph FlowGraph {\nlabel=\"%s (%s)\";labelloc=t;labeljust=l;fontname=Helvetica;fontsize=10;fontcolor=\"#000000\";", jumper->name, jumper->arguments);
 
 	if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
-		fprintf(dotFile, "\t%s [label=\"%s line: %i\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name, jumper->lineNumber);
+		fprintf(dotFile, "\t%s [label=\"line: %i\\n %s \" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->lineNumber, jumper->name);
 	}else{
 		fprintf(dotFile, "\t%s [label=\"%s\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name);
 	}
@@ -169,10 +169,16 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile, ch
 	while(jumper != NULL){
 		if(jumper->uniq && jumper->lineNumber != 0){
 			if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
-				fprintf(dotFile, "\t%s [label=\"{<f0> %s|<f1> line: %i}\" shape=record];\n", jumper->name, jumper->name, jumper->lineNumber);
+				fprintf(dotFile, "\t%s [label=\"line: %i\\n %s\" shape=record];\n", jumper->name, jumper->lineNumber, jumper->name);
 			}
 			else{
 				fprintf(dotFile, "\t%s [label=\"%s\" shape=record];\n", jumper->name, jumper->name);
+			}
+		}else{
+			if(!strcmp(jumper->name,"exit") || !strcmp(jumper->name,"return")){
+				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\", style=\"filled\",color=\"#FF0000\"];\n", jumper->name, jumper->name);
+			}else{
+				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\"];\n", jumper->name, jumper->name);
 			}
 		}
 		jumper = jumper -> next;
@@ -186,7 +192,7 @@ void createDotFile(struct object **start, struct object **end, FILE *dotFile, ch
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
 				if((argv3 != NULL && !strcmp(argv3, "args")) || (argv4 != NULL &&!strcmp(argv4, "args"))){
-					fprintf(dotFile, "\t%s -> %s [label=\"%s\"];\n", jumper->name, tmp->name, tmp->arguments);
+					fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\"];\n", jumper->name, tmp->name, tmp->arguments);
 				}
 				else{
 					fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
