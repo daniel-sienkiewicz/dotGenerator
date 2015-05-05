@@ -13,10 +13,21 @@ int main(int argc, char *argv[]){
 	cflowFunction(argv[1], argv[2]);
 	
 	// Creating DOT file with data
-	createDotFile(&head, &tail, dotFile, argv[3], argv[4]);
+	createDotFile(dotFile, 3);
 
 	// DEBUG
-	print(&head, &tail);
+	print();
 
+	printf("API tests:\n");
+	printf("All functions: %i\n", countAllFunctions());
+	printf("Deleting list... ");
+	deleteList();
+	deleteFunction(15);
+
+	// DEBUG
+	print();
+
+	printf("Search fuction: ");
+	printOne(getObject(5));
 	return 0;
 }

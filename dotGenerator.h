@@ -9,6 +9,7 @@
 
 // Function
 struct object{
+	int id;
 	struct object *next; // Next element in the list
 	int spaceCout; // How many space - level in graph
 	char name[maxFunctionName]; // Function name
@@ -24,29 +25,40 @@ struct object *head; // Head of the functions list
 struct object *tail; // Tail of the functions list
 
 // List of functions
-void print(struct object **, struct object **);
-void createDotFile(struct object **, struct object **, FILE *, char *, char *);
-void insert(struct object **, struct object **, char [], int);
+void print();
+void createDotFile(FILE *, int);
+void insert(char [], int);
 void prepareData(FILE *);
 void cflowFunction(char *, char *);
 void createPng();
 void checkStatus(int);
+int countAllFunctions();
+void deleteList();
+void deleteFunction(int);
+void printOne(struct object *);
+struct object * getObject(int);
+
 
 // DEBUG function
 // Printing all elements in list
-void print(struct object **start, struct object **end){
+void print(){
 	struct object *jumper;
-	jumper = *start;
+	jumper = head;
 	printf("All functions:\n");
 	while(jumper != NULL){
-		printf("Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
+		printOne(jumper);
 		jumper = jumper->next;
 	}
 	printf("\n");
 }
 
+// DEBUG Print one function with arguments
+void printOne(struct object * jumper){
+	printf("ID: %i Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->id, jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
+}
+
 // Inserting new object into list
-void insert(struct object **start, struct object **end, char name[], int spaceCout){
+void insert(char name[], int spaceCout){
 	int i = 0;
 	int first = 0;
 
@@ -93,22 +105,24 @@ void insert(struct object **start, struct object **end, char name[], int spaceCo
 	}
 
 	struct object *jumper;
-	jumper = *start;
+	jumper = head;
 	while(jumper != NULL){
 		if(jumper->lineNumber == newObject->lineNumber)
 			newObject->uniq = 0;
+		newObject->id = jumper-> id + 1;
 		jumper = jumper->next;
 	}
 
 	//if list is empty
-	if(*start == NULL){
-		*start = newObject;
-		(*start)->next = NULL;
-		*end = *start;
+	if(head == NULL){
+		newObject->id = 1;
+		head = newObject;
+		(head)->next = NULL;
+		tail = head;
 		return;
 	} else {
-		(*end)->next = newObject;
-		(*end) = newObject;
+		(tail)->next = newObject;
+		(tail) = newObject;
 		return;
 	}	
 }
@@ -129,13 +143,11 @@ void prepareData(FILE *cflowFile){
 			iterator++;
 		}
 
-		//i = iterator;
-
 		for(i = iterator; i < maxFunctionName; i++){
 			name[i - iterator] = arr[i];
 		}
 
-		insert(&head, &tail, name, spaceCout);
+		insert(name, spaceCout);
 		spaceCout = 0;
 		iterator = 0;
 
@@ -146,55 +158,62 @@ void prepareData(FILE *cflowFile){
 }
 
 // Creating *.dot file - main algorithm
-void createDotFile(struct object **start, struct object **end, FILE *dotFile, char *argv3, char *argv4){
+void createDotFile(FILE *dotFile, int version){
+	printf("Version: %i\n", version);
 	// Preparing data to insert in DOT file
 	prepareData(cflowFile);
 
 	struct object *jumper; // root
 	struct object *tmp; // childrens
-	jumper = *start;
-	tmp = (*start)->next;
+	jumper = head;
+	tmp = (head)->next;
 
 	// dot requrements in file
-	fprintf(dotFile, "digraph FlowGraph {\nlabel=\"%s (%s)\";labelloc=t;labeljust=l;fontname=Helvetica;fontsize=10;fontcolor=\"#000000\";", jumper->name, jumper->arguments);
-
-	if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
-		fprintf(dotFile, "\t%s [label=\"line: %i\\n %s \" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->lineNumber, jumper->name);
-	}else{
-		fprintf(dotFile, "\t%s [label=\"%s\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\"];\n", jumper->name, jumper->name);
+	fprintf(dotFile, "digraph FlowGraph {\n");
+	
+	if(version == 1 || version == 3){
+		fprintf(dotFile, "label=\"%s (%s)\";labelloc=t;labeljust=l;fontname=Helvetica;fontsize=10;fontcolor=\"#000000\";", jumper->name, jumper->arguments);
+		fprintf(dotFile, "\t%s [label=\"line: %i\\n %s \" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\", fontname=Helvetica];\n", jumper->name, jumper->lineNumber, jumper->name);
+	} else{
+		fprintf(dotFile, "\t%s [label=\"%s\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\", fontname=Helvetica];\n", jumper->name, jumper->name);
 	}
 
 	jumper = jumper -> next;
 
 	while(jumper != NULL){
 		if(jumper->uniq && jumper->lineNumber != 0){
-			if((argv3 != NULL && !strcmp(argv3, "line")) || (argv4 != NULL &&!strcmp(argv4, "line"))){
-				fprintf(dotFile, "\t%s [label=\"line: %i\\n %s\" shape=record];\n", jumper->name, jumper->lineNumber, jumper->name);
+			if(version == 1){
+				fprintf(dotFile, "\t%s [label=\"line: %i\\n %s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->lineNumber, jumper->name);
+			} else{
+				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->name);
 			}
-			else{
-				fprintf(dotFile, "\t%s [label=\"%s\" shape=record];\n", jumper->name, jumper->name);
-			}
-		}else{
+		} else{
 			if(!strcmp(jumper->name,"exit") || !strcmp(jumper->name,"return")){
-				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\", style=\"filled\",color=\"#FF0000\"];\n", jumper->name, jumper->name);
-			}else{
-				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\"];\n", jumper->name, jumper->name);
+				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\", style=\"filled\",color=\"#FF0000\", fontname=Helvetica];\n", jumper->name, jumper->name);
+			} else{
+				fprintf(dotFile, "\t%s [label=\"%s\", shape=record, color=\"#FF00FF\", fontname=Helvetica];\n", jumper->name, jumper->name);
 			}
 		}
 		jumper = jumper -> next;
 	}
 
-	jumper = *start;
+	jumper = head;
 
 	fprintf(dotFile, "\n");
 	while(jumper != NULL){
 		tmp = jumper->next;
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
-				if((argv3 != NULL && !strcmp(argv3, "args")) || (argv4 != NULL &&!strcmp(argv4, "args"))){
-					fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\"];\n", jumper->name, tmp->name, tmp->arguments);
-				}
-				else{
+				if(version == 3){
+					if(strcmp("", tmp->arguments)){
+						fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
+						fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, tmp->name, tmp->name);
+					} else{
+						fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
+					}
+				} else if(version == 2){
+					fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
+				} else{
 					fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
 				}
 			}
@@ -253,4 +272,56 @@ void checkStatus(int status){
 		exit(1);
 	}
 }
+
+// Some API
+
+// Return count of all used functions in list
+int countAllFunctions(){
+	struct object *jumper;
+	jumper = head;
+	int count = 0;
+
+	while(jumper != NULL){
+		count++;	
+		jumper = jumper->next;
+	}
+
+	return count;
+}
+
+// Delete main function list
+void deleteList(){
+	//TO DO!!!!!!
+	printf("Done\n");
+}
+
+// Delete function with id
+void deleteFunction(int id){
+	//TO DO!!!!!!!
+
+	struct object *jumper;
+	jumper = head;
+
+	while(jumper != NULL){
+
+		jumper = jumper->next;
+	}
+
+	if(jumper == NULL){
+		printf("Function with ID: %i doesn't exist in list\n", id);
+	}
+}
+
+// Return One function with ID
+struct object * getObject(int id){
+	struct object *jumper;
+	jumper = head;
+
+	while(jumper != NULL && jumper->id != id){
+		jumper = jumper->next;
+	}
+
+	return jumper;
+}
+
 #endif
