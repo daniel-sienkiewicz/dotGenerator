@@ -53,3 +53,8 @@ Now you can see graph of usage your function in outputImage
 * Cflow package
 * dot package
 * GCC compiler
+
+##Documentation
+[Link](http://dotgenerator.sienkiewicz.ovh/)
+##Author
+[Daniel Sienkiewicz](mailto:sienkiewicz@project-midas.com)
