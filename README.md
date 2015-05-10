@@ -1,14 +1,11 @@
 #*.dot file generator
 
-##Files
-* dotGenerator.c - C program which generate .dot file from cflow file
-
 ##Usage
 ~~~
 $ ./dotGenerator C_FILE_PATH FUNCTION_NAME line args
 ~~~
 
-All nedded function are located in [dotGenerator.h](dotGenerator.h). In your programm you should use:
+All nedded function are located in dotGenerator.h. In your programm you should use:
 ~~~
 // Execute cFlow
 cflowFunction(argv[1], argv[2]);
@@ -18,15 +15,19 @@ createDotFile(&head, &tail, dotFile);
 ~~~
 
 ##Parameters
-* line - insertline numbers
-* args - insert function arguments 
+* 0 - only function name
+* 1 - function name and arguments
+* 2 - function name and arguments as arrows labels
+* 3 - function name with line number and arguments as separate records
+
+###Compilation
 ~~~
-$ ./dotGenerator test.c funkcja1 line args
+$ gcc -Wall dotGenerator.c main.c -o dotGenerator
 ~~~
 
-###Example:
+###Example execute:
 ~~~
-$ ./dotGenerator test.c funkcja1 line args
+$ ./dotGenerator test.c 0
 
 Executing: cflow --output=cflowFile --main=funkcja1 test.c
 
@@ -52,6 +53,3 @@ Now you can see graph of usage your function in outputImage
 * Cflow package
 * dot package
 * GCC compiler
-
-##Author
-[Daniel Sienkiewicz](mailto:sienkiewicz@project-midas.com)
