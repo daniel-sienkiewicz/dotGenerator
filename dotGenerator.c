@@ -1,7 +1,7 @@
 /****************************************************************************
  * Copyright (C) 2015 by Daniel Sienkiewicz                                 *
  *                                                                          *
- * This file is part of Box.                                                *
+ * This file is part of dotGenerator                                        *
  *                                                                          *
  *   DotGenerator is free software: you can redistribute it and/or modify it*
  *   under the terms of the GNU Lesser General Public License as published  *
