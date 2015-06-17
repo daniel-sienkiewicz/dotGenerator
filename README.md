@@ -5,7 +5,7 @@
 $ ./dotGenerator C_FILE_PATH FUNCTION_NAME line args
 ~~~
 
-All nedded function are located in dotGenerator.h. In your programm you should use:
+All nedded function are located in dotGenerator.h. In your programm you should use if you would like get call graph:
 ~~~
 // Execute cFlow
 cflowFunction(argv[1], argv[2]);
@@ -13,7 +13,7 @@ cflowFunction(argv[1], argv[2]);
 // Creating DOT file with data
 createDotFile(&head, &tail, dotFile);
 ~~~
-OR
+or if you would like get caller graph:
 ~~~
 // Execute cFlow for Caller graph
 cflowCallerFunction(argv[1]);
