@@ -38,7 +38,12 @@ void print(){
 }
 
 void printOne(struct object * jumper){
-	printf("ID: %i Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->id, jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
+	if(jumper != NULL){
+		printf("ID: %i Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->id, jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
+	}
+	else{
+		printf("NULL\n");
+	}
 }
 
 void insert(char name[], int spaceCout){
@@ -101,13 +106,17 @@ void insert(char name[], int spaceCout){
 		newObject->id = 1;
 		head = newObject;
 		(head)->next = NULL;
+		(head)->prev = NULL;
 		tail = head;
+		tail->next = NULL;
+		tail->prev = NULL;
 		return;
 	} else {
 		(tail)->next = newObject;
+		newObject->prev = tail;
 		(tail) = newObject;
 		return;
-	}	
+	}
 }
 
 void prepareData(FILE *cflowFile){
@@ -139,7 +148,7 @@ void prepareData(FILE *cflowFile){
 	}
 }
 
-void createDotFile(FILE *dotFile, int version){
+void createCallGraph(FILE *dotFile, int version){
 	printf("Version: %i\n", version);
 	// Preparing data to insert in DOT file
 	prepareData(cflowFile);
@@ -211,12 +220,86 @@ void createDotFile(FILE *dotFile, int version){
 	createPng();
 }
 
+void createCaller(struct object * ob, int version){
+	struct object *jumper = ob;
+	
+	while(jumper->spaceCout != 0){
+		while(ob->spaceCout - jumper->spaceCout == 0){
+			jumper = jumper->prev;
+		}
+		if(version == 3){
+			if(strcmp("", ob->arguments)){
+				fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, jumper->arguments);
+				fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, ob->name, ob->name);
+			} else{
+				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
+			}
+		} else if(version == 2){
+			fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, ob->arguments);
+		} else{
+			fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
+		}
+		
+		//fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
+		ob = jumper;		
+	}
+}
+
+void createCallerGraph(FILE *dotFile, int version, char *argv2){
+	printf("Version: %i\n", version);
+	// Preparing data to insert in DOT file
+	prepareData(cflowFile);
+
+	struct object *jumper; // root
+	jumper = head;
+	
+	fprintf(dotFile, "digraph FlowGraph {\n");
+
+	fprintf(dotFile, "\n");
+	while(jumper != NULL){
+		if(!strcmp(jumper->name, argv2)){
+			createCaller(jumper, version);
+		}
+		jumper = jumper -> next;
+	}
+
+	fprintf(dotFile, "}");
+
+	fclose(cflowFile);
+	system("rm cflowFile");
+	fclose(dotFile);
+	createPng();
+}
+
 void cflowFunction(char *argv, char *argv2){
 	char command[BUFSIZ];
 	int status = 0;
 
 	strcpy (command, "cflow --output=cflowFile --main=");
 	strcat (command, argv2);
+	strcat (command, " ");
+  	strcat (command, argv);
+
+  	printf("\nExecuting: %s\n\n", command);
+    status = system(command);
+    checkStatus(status);
+
+    // Opening needed files
+	cflowFile = fopen ("cflowFile", "r");
+	dotFile = fopen("out.dot", "w+");
+	
+	// Catching errors
+	if (cflowFile == NULL || dotFile == NULL) {
+		perror("Error: ");
+		exit (1);
+	}
+}
+
+void cflowCallerFunction(char *argv){
+	char command[BUFSIZ];
+	int status = 0;
+
+	strcpy (command, "cflow --output=cflowFile");
 	strcat (command, " ");
   	strcat (command, argv);
 
@@ -264,23 +347,41 @@ int countAllFunctions(){
 }
 
 void deleteList(){
-	//TO DO!!!!!!
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
+	struct object *tmp = (struct object *)malloc(sizeof(struct object));
+	jumper = head;
+
+	while(jumper != NULL){
+		tmp = jumper;
+		jumper = jumper->next;
+		deleteFunction(tmp->id);
+	}
+
 	printf("Done\n");
 }
 
 void deleteFunction(int id){
-	//TO DO!!!!!!!
-
-	struct object *jumper;
-	jumper = head;
-
-	while(jumper != NULL){
-
-		jumper = jumper->next;
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
+	struct object *tmp = (struct object *)malloc(sizeof(struct object));
+	
+	if(head->id == id){
+		tmp = head;
+		head = head->next;
+		free(tmp);		
 	}
 
-	if(jumper == NULL){
-		printf("Function with ID: %i doesn't exist in list\n", id);
+	else{
+		for(jumper = head; jumper->next != NULL; jumper = jumper -> next){
+			if(jumper->next->id == id){
+				tmp = jumper->next;
+				if(jumper->next->next != NULL)
+					jumper->next = jumper->next->next;
+				else{
+					jumper->next = tail;
+				}
+				free(tmp);	
+			}
+		}
 	}
 }
 

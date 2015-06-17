@@ -37,6 +37,7 @@
 struct object{
 	int id; /**< Function id in the list*/
 	struct object *next; /**< Next element in the list*/
+	struct object *prev; /**< Prev element in the list*/
 	int spaceCout; /**< How many space - level in graph*/
 	char name[maxFunctionName]; /**< Function name*/
 	int lineNumber; /**< Line in which start this function*/
@@ -57,10 +58,22 @@ struct object *tail; /**< Tail of the functions list*/
 void print();
 
 /** 
-* @details 	Creating *.dot file - main algorithm
+* @details 	Creating *.dot file - creating call graph
 * @param      	FILE *     file with cflow data
 */
-void createDotFile(FILE *, int);
+void createCallGraph(FILE *, int);
+
+/** 
+* @details 	Creating *.dot file - creating caller graph
+* @param      	FILE *     file with cflow data
+*/
+void createCallerGraph(FILE *, int, char *);
+
+/** 
+* @details 	Creating *.dot file - creating caller graph
+* @param      	FILE *     file with cflow data
+*/
+void createCaller(struct object *, int);
 
 /** 
 * @details	Inserting new object into list
@@ -76,10 +89,16 @@ void insert(char [], int);
 void prepareData(FILE *);
 
 /** 
-* @details	Execute cFlow
+* @details	Execute cFlow for call graph
 * @param	char * char * argument to execute cflow
 */
 void cflowFunction(char *, char *);
+
+/** 
+* @details	Execute cFlow for caller graph
+* @param	char * char * argument to execute cflow
+*/
+void cflowCallerFunction(char *);
 
 /** 
 * @details Creating PNG file and Cleaning up

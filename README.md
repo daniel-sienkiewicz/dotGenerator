@@ -13,6 +13,14 @@ cflowFunction(argv[1], argv[2]);
 // Creating DOT file with data
 createDotFile(&head, &tail, dotFile);
 ~~~
+OR
+~~~
+// Execute cFlow for Caller graph
+cflowCallerFunction(argv[1]);
+
+// Creating caller graph
+createCallerGraph(dotFile, 2, argv[2]);
+~~~
 
 ##Parameters
 * 0 - only function name
@@ -47,7 +55,7 @@ Name: funkcja6 Space: 8 LineNumber: 15 Args: void
 Name: funkcja1 Space: 12 LineNumber: 35 Args: 
 ~~~
 
-Now you can see graph of usage your function in outputImage
+Now you can see call graph/caller graph of usage your function in outputImage
 
 ##Requirements
 * Cflow package
