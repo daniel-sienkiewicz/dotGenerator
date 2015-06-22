@@ -21,7 +21,8 @@
  * @file samples.h
  * @author Daniel Sienkiewicz
  * @date 22 June 2015
- * @brief File containing declarations of all functions.
+ * @brief File containing declarations of all sample functions.
+ * @example
  */
 
 #ifndef SAMPLES_H

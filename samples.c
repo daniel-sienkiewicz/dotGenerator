@@ -21,7 +21,8 @@
  * @file dotGesamples.c
  * @author Daniel Sienkiewicz
  * @date 22 June 2015
- * @brief File containing definicion of all functions.
+ * @brief File containing definicion of all sample functions.
+ * @example
  */
 
 #include "samples.h"
