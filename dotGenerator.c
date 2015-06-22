@@ -14,85 +14,24 @@
  *   GNU Lesser General Public License for more details.                    *
  *                                                                          *
  *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with Box.  If not, see <http://www.gnu.org/licenses/>.   *
+ *   License along with Box. If not, see <http://www.gnu.org/licenses/>.    *
  ****************************************************************************/
 
 /**
  * @file dotGenerator.c
  * @author Daniel Sienkiewicz
- * @date 10 May 2015
+ * @date 22 June 2015
  * @brief File containing definicion of all functions.
  */
 
 #include "dotGenerator.h"
 
-void print(){
-	struct object *jumper;
-	jumper = head;
-	printf("All functions:\n");
-	while(jumper != NULL){
-		printOne(jumper);
-		jumper = jumper->next;
-	}
-	printf("\n");
-}
-
-void printOne(struct object * jumper){
-	if(jumper != NULL){
-		printf("ID: %i Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->id, jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
-	}
-	else{
-		printf("NULL\n");
-	}
-}
-
-void insert(char name[], int spaceCout){
-	int i = 0;
-	int first = 0;
-
-	struct object *newObject = NULL;
-	newObject = (struct object *)malloc(sizeof(struct object));
+void insert(struct object * newObject){
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
 	newObject->next = NULL;
-
-	newObject->spaceCout = spaceCout;
 	newObject->lineNumber = 0;
 	newObject->uniq = 1;
 
-	// Search function name
-	while(name[i] != 40) { // 40 = '('
-		newObject->name[i] = name[i];
-		i++;
-	}
-
-	i++;
-	
-	// Search argument list
-	while(name[i] != 40){ // 40 = '('
-		i++;
-	}
-
-	i++;
-
-	while(name[i] != 41){ // 40 = ')'
-		newObject->arguments[first] = name[i];
-		i++;
-		first++;
-	}
-
-	while(name[i] != 58 && i < maxFunctionName){
-		i++;
-	}
-
-	// Search line numer
-	if(i < maxFunctionName){
-		i++;
-		while(name[i] != 62){ // 62 = '>'
-			newObject->lineNumber = newObject->lineNumber * 10 + (name[i] - 48);
-			i++;
-		}
-	}
-
-	struct object *jumper;
 	jumper = head;
 	while(jumper != NULL){
 		if(jumper->lineNumber == newObject->lineNumber)
@@ -110,51 +49,22 @@ void insert(char name[], int spaceCout){
 		tail = head;
 		tail->next = NULL;
 		tail->prev = NULL;
+		free(jumper);
 		return;
 	} else {
 		(tail)->next = newObject;
 		newObject->prev = tail;
 		(tail) = newObject;
+		free(jumper);
 		return;
-	}
-}
-
-void prepareData(FILE *cflowFile){
-	char arr[maxFunctionName];
-	int spaceCout = 0;
-	int iterator = 0;
-	char name[maxFunctionName];
-	int i;
-
-	while(fgets(arr, maxFunctionName, cflowFile) != NULL){
-
-		// Counting space char
-		while(arr[iterator] == ' '){
-			spaceCout++;
-			iterator++;
-		}
-
-		for(i = iterator; i < maxFunctionName; i++){
-			name[i - iterator] = arr[i];
-		}
-
-		insert(name, spaceCout);
-		spaceCout = 0;
-		iterator = 0;
-
-		for(i = 0; i < maxFunctionName; i++){
-			arr[i] = 0;
-		}
 	}
 }
 
 void createCallGraph(FILE *dotFile, int version){
 	printf("Version: %i\n", version);
-	// Preparing data to insert in DOT file
-	prepareData(cflowFile);
 
-	struct object *jumper; // root
-	struct object *tmp; // childrens
+	struct object *jumper = (struct object *)malloc(sizeof(struct object)); // root
+	struct object *tmp = (struct object *)malloc(sizeof(struct object)); // childrens
 	jumper = head;
 	tmp = (head)->next;
 
@@ -214,10 +124,13 @@ void createCallGraph(FILE *dotFile, int version){
 
 	fprintf(dotFile, "}");
 
+	// Cleaning up
 	fclose(cflowFile);
 	system("rm cflowFile");
 	fclose(dotFile);
-	createPng();
+	free(jumper);
+	free(tmp);
+	deleteList();
 }
 
 void createCaller(struct object * ob, int version){
@@ -239,18 +152,16 @@ void createCaller(struct object * ob, int version){
 		} else{
 			fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
 		}
-		
-		//fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
+
 		ob = jumper;		
 	}
+	free(jumper);
 }
 
 void createCallerGraph(FILE *dotFile, int version, char *argv2){
 	printf("Version: %i\n", version);
-	// Preparing data to insert in DOT file
-	prepareData(cflowFile);
 
-	struct object *jumper; // root
+	struct object *jumper = (struct object *)malloc(sizeof(struct object)); // root
 	jumper = head;
 	
 	fprintf(dotFile, "digraph FlowGraph {\n");
@@ -265,64 +176,12 @@ void createCallerGraph(FILE *dotFile, int version, char *argv2){
 
 	fprintf(dotFile, "}");
 
+	// Cleaning up
 	fclose(cflowFile);
 	system("rm cflowFile");
 	fclose(dotFile);
-	createPng();
-}
-
-void cflowFunction(char *argv, char *argv2){
-	char command[BUFSIZ];
-	int status = 0;
-
-	strcpy (command, "cflow --output=cflowFile --main=");
-	strcat (command, argv2);
-	strcat (command, " ");
-  	strcat (command, argv);
-
-  	printf("\nExecuting: %s\n\n", command);
-    status = system(command);
-    checkStatus(status);
-
-    // Opening needed files
-	cflowFile = fopen ("cflowFile", "r");
-	dotFile = fopen("out.dot", "w+");
-	
-	// Catching errors
-	if (cflowFile == NULL || dotFile == NULL) {
-		perror("Error: ");
-		exit (1);
-	}
-}
-
-void cflowCallerFunction(char *argv){
-	char command[BUFSIZ];
-	int status = 0;
-
-	strcpy (command, "cflow --output=cflowFile");
-	strcat (command, " ");
-  	strcat (command, argv);
-
-  	printf("\nExecuting: %s\n\n", command);
-    status = system(command);
-    checkStatus(status);
-
-    // Opening needed files
-	cflowFile = fopen ("cflowFile", "r");
-	dotFile = fopen("out.dot", "w+");
-	
-	// Catching errors
-	if (cflowFile == NULL || dotFile == NULL) {
-		perror("Error: ");
-		exit (1);
-	}
-}
-
-void createPng(){
-	int status = 0;
-	printf("Generate PNG file and cleaning Up...\n\n");
-	status = system("dot -Tpng out.dot > out.png");
-	checkStatus(status);
+	free(jumper);
+	deleteList();
 }
 
 void checkStatus(int status){
@@ -334,7 +193,7 @@ void checkStatus(int status){
 
 // Some API
 int countAllFunctions(){
-	struct object *jumper;
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
 	jumper = head;
 	int count = 0;
 
@@ -342,7 +201,8 @@ int countAllFunctions(){
 		count++;	
 		jumper = jumper->next;
 	}
-
+	
+	free(jumper);
 	return count;
 }
 
@@ -357,6 +217,7 @@ void deleteList(){
 		deleteFunction(tmp->id);
 	}
 
+	free(jumper);
 	printf("Done\n");
 }
 
@@ -368,9 +229,7 @@ void deleteFunction(int id){
 		tmp = head;
 		head = head->next;
 		free(tmp);		
-	}
-
-	else{
+	} else{
 		for(jumper = head; jumper->next != NULL; jumper = jumper -> next){
 			if(jumper->next->id == id){
 				tmp = jumper->next;
@@ -383,10 +242,11 @@ void deleteFunction(int id){
 			}
 		}
 	}
+	free(jumper);
 }
 
 struct object * getObject(int id){
-	struct object *jumper;
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
 	jumper = head;
 
 	while(jumper != NULL && jumper->id != id){
@@ -394,4 +254,53 @@ struct object * getObject(int id){
 	}
 
 	return jumper;
+}
+
+void print(){
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
+	jumper = head;
+	printf("All functions:\n");
+	while(jumper != NULL){
+		printOne(jumper);
+		jumper = jumper->next;
+	}
+	printf("\n");
+	free(jumper);
+}
+
+void printOne(struct object * jumper){
+	if(jumper != NULL){
+		printf("ID: %i Name: %s Space: %i LineNumber: %i Args: %s\n", jumper->id, jumper->name, jumper->spaceCout, jumper->lineNumber, jumper->arguments);
+	} else{
+		printf("NULL\n");
+	}
+}
+
+struct names * getAllNames(){
+	struct object * jumper = (struct object *)malloc(sizeof(struct object));
+	jumper = head;
+	while(jumper != NULL){
+		struct names * one = (struct names *)malloc(sizeof(struct names));
+	
+		//one->name = jumper->name;
+		
+		//if list is empty
+		if(head == NULL){
+			headN = one;
+			(headN)->next = NULL;
+			(headN)->prev = NULL;
+			tailN = headN;
+			tailN->next = NULL;
+			tailN->prev = NULL;
+		} else {
+			(tailN)->next = one;
+			one->prev = tailN;
+			(tailN) = one;
+		}
+		
+		jumper = jumper->next;
+	}
+
+	free(jumper);
+	return headN;
 }

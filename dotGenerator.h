@@ -14,13 +14,13 @@
  *   GNU Lesser General Public License for more details.                    *
  *                                                                          *
  *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with Box.  If not, see <http://www.gnu.org/licenses/>.   *
+ *   License along with Box. If not, see <http://www.gnu.org/licenses/>.    *
  ****************************************************************************/
 
 /**
  * @file dotGenerator.h
  * @author Daniel Sienkiewicz
- * @date 10 May 2015
+ * @date 22 June 2015
  * @brief File containing declarations of all functions.
  */
 
@@ -30,19 +30,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define maxFunctionName 1000 /**< Maximum function name*/
-#define maxArgName 1000 /**< Maximum arguments length*/
+#define maxFunctionName 1000 /**< Maximum function name length*/
+#define maxArgName 1000 /**< Maximum function arguments length*/
 
-/// Structure which describe function
+/// Structure describing function
 struct object{
-	int id; /**< Function id in the list*/
+	int id; /**< Function ID in the list*/
 	struct object *next; /**< Next element in the list*/
 	struct object *prev; /**< Prev element in the list*/
 	int spaceCout; /**< How many space - level in graph*/
 	char name[maxFunctionName]; /**< Function name*/
 	int lineNumber; /**< Line in which start this function*/
-	int uniq; /**< if function in uniq in the list*/
-	char arguments[maxArgName]; /**< list of function arguments*/
+	int uniq; /**< If function is uniq in the list*/
+	char arguments[maxArgName]; /**< Arguments*/
+};
+
+/// Structure describing functions names
+struct names{
+	char name[maxFunctionName]; /**< Function name*/
+	struct names *next; /**< Next element in the list*/
+	struct names *prev; /**< Prev element in the list*/
 };
 
 FILE *cflowFile; /**< File with cflow data*/
@@ -51,20 +58,22 @@ FILE *dotFile; /**< Output file with dot code*/
 struct object *head; /**< Head of the functions list*/
 struct object *tail; /**< Tail of the functions list*/
 
-// List of functions
+struct names *headN; /**< Head of the names list*/
+struct names *tailN; /**< Tail of the names list*/
+
 /** 
-* @details	DEBUG function Printing all elements in list
+* @details	DEBUG function - Printing all elements in list
 */
 void print();
 
 /** 
-* @details 	Creating *.dot file - creating call graph
+* @details 	Creating *.dot file with call graph
 * @param      	FILE *     file with cflow data
 */
 void createCallGraph(FILE *, int);
 
 /** 
-* @details 	Creating *.dot file - creating caller graph
+* @details 	Creating *.dot file with caller graph
 * @param      	FILE *     file with cflow data
 */
 void createCallerGraph(FILE *, int, char *);
@@ -80,30 +89,7 @@ void createCaller(struct object *, int);
 * @param   	char[] string with all function data
 * \callgraph
 */
-void insert(char [], int);
-
-/** 
-* @details	Creating list with names of executed functions
-* @param    FILE *     file with cflow data
-*/
-void prepareData(FILE *);
-
-/** 
-* @details	Execute cFlow for call graph
-* @param	char * char * argument to execute cflow
-*/
-void cflowFunction(char *, char *);
-
-/** 
-* @details	Execute cFlow for caller graph
-* @param	char * char * argument to execute cflow
-*/
-void cflowCallerFunction(char *);
-
-/** 
-* @details Creating PNG file and Cleaning up
-*/
-void createPng();
+void insert(struct object *);
 
 /** 
 * @details	Checking status of executed command
@@ -130,7 +116,7 @@ void deleteList();
 void deleteFunction(int);
 
 /** 
-* @details	DEBUG function Printing one fonction
+* @details	DEBUG - printing one function
 * @param    struct object * struct of function to print
 */
 void printOne(struct object *);
@@ -141,5 +127,11 @@ void printOne(struct object *);
 * @return   structure with all function data
 */
 struct object * getObject(int);
+
+/** 
+* @details	API - Return list with names of all functions
+* @return   structure with all functions names
+*/
+struct names * getAllNames();
 
 #endif /* DOTGENERATOR_H */
