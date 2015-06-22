@@ -7,19 +7,25 @@ $ ./dotGenerator C_FILE_PATH FUNCTION_NAME line args
 
 All nedded function are located in dotGenerator.h. In your programm you should use if you would like get call graph:
 ~~~
-// Execute cFlow
+// Execute cFlow for call graph
 cflowFunction(argv[1], argv[2]);
-
-// Creating DOT file with data
-createDotFile(&head, &tail, dotFile);
+// Preparing data to insert in DOT file
+prepareData(cflowFile);
+// Creating call graph
+createCallGraph(dotFile, 2);
+// Creating PNG file
+createPng();
 ~~~
 or if you would like get caller graph:
 ~~~
 // Execute cFlow for Caller graph
 cflowCallerFunction(argv[1]);
-
+// Preparing data to insert in DOT file
+prepareData(cflowFile);
 // Creating caller graph
 createCallerGraph(dotFile, 2, argv[2]);
+// Creating PNG file
+createPng();
 ~~~
 
 ##Parameters
@@ -28,9 +34,9 @@ createCallerGraph(dotFile, 2, argv[2]);
 * 2 - function name and arguments as arrows labels
 * 3 - function name with line number and arguments as separate records
 
-###Compilation
+###Sample Compilation
 ~~~
-$ gcc -Wall dotGenerator.c main.c -o dotGenerator
+$ gcc -Wall samples.c dotGenerator.c main.c -o dotGenerator
 ~~~
 
 ###Example execute:
