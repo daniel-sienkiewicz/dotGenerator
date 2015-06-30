@@ -29,7 +29,6 @@
 void insert(struct object * newObject){
 	struct object *jumper = (struct object *)malloc(sizeof(struct object));
 	newObject->next = NULL;
-	newObject->lineNumber = 0;
 	newObject->uniq = 1;
 
 	jumper = head;
@@ -135,12 +134,14 @@ void createCallGraph(FILE *dotFile, int version){
 
 void createCaller(struct object * ob, int version){
 	struct object *jumper = ob;
-	
+
 	while(jumper->spaceCout != 0){
 		while(ob->spaceCout - jumper->spaceCout == 0){
 			jumper = jumper->prev;
 		}
+
 		if(version == 3){
+			fprintf(dotFile, "\t%s [label=\"%s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->name);
 			if(strcmp("", ob->arguments)){
 				fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, jumper->arguments);
 				fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, ob->name, ob->name);
@@ -148,14 +149,15 @@ void createCaller(struct object * ob, int version){
 				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
 			}
 		} else if(version == 2){
+			fprintf(dotFile, "\t%s [label=\"%s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->name);
 			fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, ob->arguments);
 		} else{
+			fprintf(dotFile, "\t%s [label=\"line: %i\\n %s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->lineNumber, jumper->name);
 			fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
 		}
 
 		ob = jumper;		
 	}
-	free(jumper);
 }
 
 void createCallerGraph(FILE *dotFile, int version, char *argv2){
@@ -165,6 +167,13 @@ void createCallerGraph(FILE *dotFile, int version, char *argv2){
 	jumper = head;
 	
 	fprintf(dotFile, "digraph FlowGraph {\n");
+
+	if(version == 1 || version == 3){
+		fprintf(dotFile, "label=\"%s (%s)\";labelloc=t;labeljust=l;fontname=Helvetica;fontsize=10;fontcolor=\"#000000\";", getObjectN(argv2)->name, getObjectN(argv2)->arguments);
+		fprintf(dotFile, "\t%s [label=\"line: %i\\n %s \" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\", fontname=Helvetica];\n", getObjectN(argv2)->name, getObjectN(argv2)->lineNumber, getObjectN(argv2)->name);
+	} else{
+		fprintf(dotFile, "\t%s [label=\"%s\" shape=ellipse, height=0.2,style=\"filled\", color=\"#000000\", fontcolor=\"#FFFFFF\", fontname=Helvetica];\n", getObjectN(argv2)->name, getObjectN(argv2)->name);
+	}
 
 	fprintf(dotFile, "\n");
 	while(jumper != NULL){
@@ -250,6 +259,17 @@ struct object * getObject(int id){
 	jumper = head;
 
 	while(jumper != NULL && jumper->id != id){
+		jumper = jumper->next;
+	}
+
+	return jumper;
+}
+
+struct object * getObjectN(char *argv2){
+	struct object *jumper = (struct object *)malloc(sizeof(struct object));
+	jumper = head;
+
+	while(jumper != NULL && strcmp(jumper->name, argv2)){
 		jumper = jumper->next;
 	}
 

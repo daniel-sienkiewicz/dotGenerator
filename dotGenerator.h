@@ -129,6 +129,13 @@ void printOne(struct object *);
 struct object * getObject(int);
 
 /** 
+* @details	API - Return One function with name
+* @param    char * name of function to find
+* @return   structure with all function data
+*/
+struct object * getObjectN(char *);
+
+/** 
 * @details	API - Return list with names of all functions
 * @return   structure with all functions names
 */

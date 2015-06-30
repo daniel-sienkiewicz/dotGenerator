@@ -38,24 +38,24 @@ int main(int argc, char *argv[]){
 
 	// CALL GRAPH PART
 	// Execute cFlow for call graph
-	cflowFunction(argv[1], argv[2]);
+	//cflowFunction(argv[1], argv[2]);
 	// Preparing data to insert in DOT file
-	prepareData(cflowFile);
+	//prepareData(cflowFile);
 	// Creating call graph
-	createCallGraph(dotFile, 2);
+	//createCallGraph(dotFile, 3);
 	// Creating PNG file
-	createPng();
+	//createPng();
 
 	
 	// CALLER GRAPH PART
 	// Execute cFlow for Caller graph
-	//cflowCallerFunction(argv[1]);
+	cflowCallerFunction(argv[1]);
 	// Preparing data to insert in DOT file
-	//prepareData(cflowFile);
+	prepareData(cflowFile);
 	// Creating caller graph
-	//createCallerGraph(dotFile, 2, argv[2]);
+	createCallerGraph(dotFile, 1, argv[2]);
 	// Creating PNG file
-	//createPng();
+	createPng();
 
 	// Testing API
 /*	printf("API tests:\n");
