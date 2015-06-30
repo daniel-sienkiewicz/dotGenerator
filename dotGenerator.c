@@ -35,7 +35,12 @@ void insert(struct object * newObject){
 	while(jumper != NULL){
 		if(jumper->lineNumber == newObject->lineNumber)
 			newObject->uniq = 0;
-		newObject->id = jumper-> id + 1;
+
+		if(getObjectN(newObject->name) != NULL){
+			newObject->id = getObjectN(newObject->name)->id;
+		}else {
+			newObject->id = countAllFunctions() + 1;
+		}
 		jumper = jumper->next;
 	}
 
@@ -59,6 +64,21 @@ void insert(struct object * newObject){
 	}
 }
 
+int in(int value, int * count, int inserted[]){
+	int i;
+	
+	printf("%i ", value);
+
+	for(i = 0; i < *count; i++){
+		if(inserted[i] == value){
+			return 1;
+		}	
+	}
+
+	inserted[*count] = value;
+	return 0;
+}
+
 void createCallGraph(FILE *dotFile, int version){
 	printf("Version: %i\n", version);
 
@@ -66,6 +86,14 @@ void createCallGraph(FILE *dotFile, int version){
 	struct object *tmp = (struct object *)malloc(sizeof(struct object)); // childrens
 	jumper = head;
 	tmp = (head)->next;
+	int count = countAllFunctions() * countAllFunctions();
+	int inserted[count];
+	int counter = 0;
+
+	for(counter = 0; counter < count; counter++)
+		inserted[counter] = 0;
+
+	counter = 0;
 
 	fprintf(dotFile, "digraph FlowGraph {\n");
 	
@@ -80,6 +108,7 @@ void createCallGraph(FILE *dotFile, int version){
 
 	while(jumper != NULL){
 		if(jumper->uniq && jumper->lineNumber != 0){
+
 			if(version == 1){
 				fprintf(dotFile, "\t%s [label=\"line: %i\\n %s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->lineNumber, jumper->name);
 			} else{
@@ -101,21 +130,25 @@ void createCallGraph(FILE *dotFile, int version){
 	while(jumper != NULL){
 		tmp = jumper->next;
 		while(tmp != NULL && jumper->spaceCout != tmp->spaceCout){
+			
 			if(jumper->spaceCout + 4 == tmp->spaceCout){
-				if(version == 3){
-					if(strcmp("", tmp->arguments)){
-						fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
-						fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, tmp->name, tmp->name);
+				if(!in(jumper->id*10 + tmp->id, &counter, inserted)){
+					if(version == 3){
+						if(strcmp("", tmp->arguments)){
+							fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
+							fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, tmp->name, tmp->name);
+						} else{
+							fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
+						}
+					} else if(version == 2){
+						fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
 					} else{
 						fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
 					}
-				} else if(version == 2){
-					fprintf(dotFile, "\t%s -> %s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, tmp->name, tmp->arguments);
-				} else{
-					fprintf(dotFile, "\t%s -> %s;\n", jumper->name, tmp->name);
 				}
 			}
-
+			
+			counter++;
 			tmp = tmp ->next;
 		}
 		jumper = jumper -> next;
@@ -143,7 +176,7 @@ void createCaller(struct object * ob, int version){
 		if(version == 3){
 			fprintf(dotFile, "\t%s [label=\"%s\", shape=record, fontname=Helvetica];\n", jumper->name, jumper->name);
 			if(strcmp("", ob->arguments)){
-				fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, jumper->arguments);
+				fprintf(dotFile, "\t%s%s [label=\"%s\", fontsize=\"8\", fontname=Helvetica];\n", jumper->name, ob->name, ob->arguments);
 				fprintf(dotFile, "\t%s -> %s%s ->%s;\n", jumper->name, jumper->name, ob->name, ob->name);
 			} else{
 				fprintf(dotFile, "\t%s -> %s;\n", jumper->name, ob->name);
@@ -191,13 +224,6 @@ void createCallerGraph(FILE *dotFile, int version, char *argv2){
 	fclose(dotFile);
 	free(jumper);
 	deleteList();
-}
-
-void checkStatus(int status){
-	if(status != 0){
-		printf("Error %i\n", status);
-		exit(1);
-	}
 }
 
 // Some API

@@ -63,24 +63,28 @@ struct names *tailN; /**< Tail of the names list*/
 
 /** 
 * @details	DEBUG function - Printing all elements in list
+* \callgraph
 */
 void print();
 
 /** 
 * @details 	Creating *.dot file with call graph
 * @param      	FILE *     file with cflow data
+* \callgraph
 */
 void createCallGraph(FILE *, int);
 
 /** 
 * @details 	Creating *.dot file with caller graph
 * @param      	FILE *     file with cflow data
+* \callgraph
 */
 void createCallerGraph(FILE *, int, char *);
 
 /** 
 * @details 	Creating *.dot file - creating caller graph
 * @param      	FILE *     file with cflow data
+* \callgraph
 */
 void createCaller(struct object *, int);
 
@@ -92,32 +96,36 @@ void createCaller(struct object *, int);
 void insert(struct object *);
 
 /** 
-* @details	Checking status of executed command
-* @param	int status of exetucted commend to check
-* @see      http://pl.wikibooks.org/wiki/C/system
+* @details	Checking if function was added to file
+* @return   status if function was added to dot file
+* \callgraph
 */
-void checkStatus(int);
+int in(int, int *, int *);
 
 /** 
 * @details	API - Return count of all used functions in list
 * @return   Count of all functions in the list
+* \callgraph
 */
 int countAllFunctions();
 
 /** 
 * @details	API - Delete main function list
+* \callgraph
 */
 void deleteList();
 
 /** 
 * @details	API - Delete function with id
 * @param    int id function to delete from list
+* \callgraph
 */
 void deleteFunction(int);
 
 /** 
 * @details	DEBUG - printing one function
 * @param    struct object * struct of function to print
+* \callgraph
 */
 void printOne(struct object *);
 
@@ -125,6 +133,7 @@ void printOne(struct object *);
 * @details	API - Return One function with ID
 * @param    int id of function to find
 * @return   structure with all function data
+* \callgraph
 */
 struct object * getObject(int);
 
@@ -132,12 +141,14 @@ struct object * getObject(int);
 * @details	API - Return One function with name
 * @param    char * name of function to find
 * @return   structure with all function data
+* \callgraph
 */
 struct object * getObjectN(char *);
 
 /** 
 * @details	API - Return list with names of all functions
 * @return   structure with all functions names
+* \callgraph
 */
 struct names * getAllNames();
 

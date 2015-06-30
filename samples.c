@@ -90,6 +90,8 @@ void prepareData(FILE *cflowFile){
 		insert(newObject);
 		spaceCout = 0;
 		iterator = 0;
+		j = 0;
+		first = 0;
 
 		for(i = 0; i < maxFunctionName; i++){
 			arr[i] = 0;
@@ -149,4 +151,11 @@ void createPng(){
 	printf("Generate PNG file and cleaning Up...\n\n");
 	status = system("dot -Tpng out.dot > out.png");
 	checkStatus(status);
+}
+
+void checkStatus(int status){
+	if(status != 0){
+		printf("Error %i\n", status);
+		exit(1);
+	}
 }

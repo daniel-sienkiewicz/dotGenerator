@@ -31,7 +31,14 @@
 #include <stdlib.h>
 #include <string.h>
 
- /** 
+/** 
+* @details	Checking status of executed command
+* @param	int status of exetucted commend to check
+* @see      http://pl.wikibooks.org/wiki/C/system
+*/
+void checkStatus(int);
+
+/** 
 * @details	Execute cFlow for call graph
 * @param	char * char * argument to execute cflow
 */
