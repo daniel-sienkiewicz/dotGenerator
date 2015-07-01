@@ -114,10 +114,9 @@ void cflowFunction(char *argv, char *argv2){
 
     // Opening needed files
 	cflowFile = fopen ("cflowFile", "r");
-	dotFile = fopen("out.dot", "w+");
 	
 	// Catching errors
-	if (cflowFile == NULL || dotFile == NULL) {
+	if (cflowFile == NULL) {
 		perror("Error: ");
 		exit (1);
 	}
@@ -137,10 +136,9 @@ void cflowCallerFunction(char *argv){
 
     // Opening needed files
 	cflowFile = fopen ("cflowFile", "r");
-	dotFile = fopen("out.dot", "w+");
 	
 	// Catching errors
-	if (cflowFile == NULL || dotFile == NULL) {
+	if (cflowFile == NULL) {
 		perror("Error: ");
 		exit (1);
 	}
@@ -158,4 +156,9 @@ void checkStatus(int status){
 		printf("Error %i\n", status);
 		exit(1);
 	}
+}
+
+void cleanUp(){
+	fclose(cflowFile);
+	system("rm cflowFile");
 }

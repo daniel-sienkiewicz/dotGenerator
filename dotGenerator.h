@@ -41,25 +41,13 @@ struct object{
 	int spaceCout; /**< How many space - level in graph*/
 	char name[maxFunctionName]; /**< Function name*/
 	int lineNumber; /**< Line in which start this function*/
-	int uniq; /**< If function is uniq in the list*/
 	char arguments[maxArgName]; /**< Arguments*/
 };
 
-/// Structure describing functions names
-struct names{
-	char name[maxFunctionName]; /**< Function name*/
-	struct names *next; /**< Next element in the list*/
-	struct names *prev; /**< Prev element in the list*/
-};
-
-FILE *cflowFile; /**< File with cflow data*/
 FILE *dotFile; /**< Output file with dot code*/
 
 struct object *head; /**< Head of the functions list*/
 struct object *tail; /**< Tail of the functions list*/
-
-struct names *headN; /**< Head of the names list*/
-struct names *tailN; /**< Tail of the names list*/
 
 /** 
 * @details	DEBUG function - Printing all elements in list
@@ -86,7 +74,7 @@ void createCallerGraph(FILE *, int, char *);
 * @param      	FILE *     file with cflow data
 * \callgraph
 */
-void createCaller(struct object *, int);
+void createCaller(struct object *, int, int *, FILE *);
 
 /** 
 * @details	Inserting new object into list
@@ -144,12 +132,5 @@ struct object * getObject(int);
 * \callgraph
 */
 struct object * getObjectN(char *);
-
-/** 
-* @details	API - Return list with names of all functions
-* @return   structure with all functions names
-* \callgraph
-*/
-struct names * getAllNames();
 
 #endif /* DOTGENERATOR_H */

@@ -45,7 +45,8 @@ int main(int argc, char *argv[]){
 	createCallGraph(dotFile, 3);
 	// Creating PNG file
 	createPng();
-
+	// Cleaning up unnecessary files
+	cleanUp();
 	
 	// CALLER GRAPH PART
 	// Execute cFlow for Caller graph
@@ -53,9 +54,11 @@ int main(int argc, char *argv[]){
 	// Preparing data to insert in DOT file
 	//prepareData(cflowFile);
 	// Creating caller graph
-	//createCallerGraph(dotFile, 1, argv[2]);
+	//createCallerGraph(dotFile, 3, argv[2]);
 	// Creating PNG file
 	//createPng();
+	// Cleaning up unnecessary files
+	//cleanUp();
 
 	// Testing API
 /*	printf("API tests:\n");

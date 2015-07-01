@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+FILE *cflowFile; /**< File with cflow data*/ 
+
 /** 
 * @details	Checking status of executed command
 * @param	int status of exetucted commend to check
@@ -60,5 +62,10 @@ void prepareData(FILE *);
 * @details Creating PNG file
 */
 void createPng();
+
+/** 
+* @details Cleaning up unnecessary files
+*/
+void cleanUp();
 
 #endif /* SAMPLES_H */
